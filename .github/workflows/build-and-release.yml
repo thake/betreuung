@@ -22,11 +22,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
       - name: Build and Package
-        run: ./gradlew packageDistributionForCurrentOS -Dapp.version=1.0.${{ github.run_number }}
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          arguments: packageDistributionForCurrentOS "-Dapp.version=1.0.${{ github.run_number }}"
 
       - name: Upload Artifacts (macOS)
         if: matrix.os == 'macos-latest'
