@@ -12,7 +12,7 @@ import javax.xml.transform.stream.StreamResult
 import org.w3c.dom.Document
 
 data class MappedTransaction(
-        val date: String, // dd.MM.yyyy
+        val date: java.time.LocalDate,
         val payee: String,
         val purpose: String,
         val amount: Double,
@@ -31,7 +31,7 @@ object XmlGenerator {
     fun generateXml(
             betreuter: Betreuter,
             accountTransactions: Map<de.thake.betreuung.model.BankAccount, List<MappedTransaction>>,
-            periodStart: String, // dd.MM.yyyy
+            periodStart: String, // dd.MM.yyyy (Input from UI is still String)
             periodEnd: String, // dd.MM.yyyy
             initialBalance: Double,
             outputFile: File
@@ -70,6 +70,9 @@ object XmlGenerator {
         addElement(doc, datarow, "geschNr", betreuter.aktenzeichen)
         addElement(doc, datarow, "nname", betreuter.nachname)
         addElement(doc, datarow, "vname", betreuter.vorname)
+        // Betreuter dates are still strings in model, so we treat them as such or parse?
+        // Logic says simple string passing if it matches, but let's be safe if needed.
+        // For now, assuming Betreuter model strings are correct or we use ensureTime(String).
         addElement(doc, datarow, "gebdatum", ensureTime(betreuter.geburtsdatum))
         addElement(doc, datarow, "zeitvom", ensureTime(periodStart))
         addElement(doc, datarow, "zeitbis", ensureTime(periodEnd))
@@ -122,6 +125,7 @@ object XmlGenerator {
                     val txRow = doc.createElement("datarow")
                     dataset.appendChild(txRow)
 
+                    // Format LocalDate to String for XML
                     addElement(doc, txRow, "DateS2", ensureTime(tx.date))
                     addElement(doc, txRow, "BezeichnungPos3", truncateToLength(tx.payee, 20))
                     addElement(doc, txRow, "BezeichnungPos4", truncateToLength(tx.purpose, 24))
@@ -156,32 +160,25 @@ object XmlGenerator {
         parent.appendChild(element)
     }
 
+    // Overload for LocalDate
+    private fun ensureTime(date: java.time.LocalDate): String {
+        return date.format(dateFormatter) + " 00:00:00"
+    }
+
     private fun ensureTime(dateStr: String): String {
-        // First try to normalize the date part to dd.MM.yyyy
-        var normalized = dateStr
-        val datePart = dateStr.split(" ")[0] // Handle case where time is already likely present
-
-        val formatters =
-                listOf(
-                        DateTimeFormatter.ofPattern("dd.MM.yyyy"),
-                        DateTimeFormatter.ofPattern("dd.MM.yy")
-                )
-
-        for (fmt in formatters) {
-            try {
-                val d = java.time.LocalDate.parse(datePart, fmt)
-                normalized = d.format(dateFormatter)
-                break
-            } catch (e: Exception) {
-                // continue
-            }
+        // First try to normalize the date with DateParser to handle various inputs
+        val parsed = DateParser.parse(dateStr)
+        if (parsed != null) {
+            return ensureTime(parsed)
         }
 
-        // Appends 00:00:00 if missing (normalized will only represent the date part now)
-        if (normalized.length <= 10) {
-            return "$normalized 00:00:00"
+        // Fallback: Just return what we got if parsing fails (legacy behavior expectation?)
+        // Or we could append 00:00:00 if it looks like a date.
+        // Let's try to keep meaningful content.
+        if (dateStr.length <= 10 && dateStr.contains(".")) {
+            return "$dateStr 00:00:00"
         }
-        return normalized
+        return dateStr
     }
 
     private fun formatAmount(amount: Double): String {

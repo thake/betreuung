@@ -20,7 +20,14 @@ class XmlGenerationTest {
                 Betreuter("b1", "Mustermann", "Max", "01.01.1980", "AZ123", listOf(account), "City")
 
         // Transaction with 2-digit year
-        val tx = MappedTransaction("01.01.24", "Payee", "Purpose", 10.0, TransactionType.EXPENSE)
+        val tx =
+                MappedTransaction(
+                        java.time.LocalDate.of(2024, 1, 1),
+                        "Payee",
+                        "Purpose",
+                        10.0,
+                        TransactionType.EXPENSE
+                )
 
         val accountTransactions = mapOf(account to listOf(tx))
         val outFile = File(tempDir, "output.xml")

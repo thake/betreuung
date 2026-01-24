@@ -18,45 +18,29 @@ object DateValidator {
             periodStart: String,
             periodEnd: String
     ): ValidationResult {
-        val formatters =
-                listOf(
-                        DateTimeFormatter.ofPattern("dd.MM.yyyy"),
-                        DateTimeFormatter.ofPattern("dd.MM.yy")
-                )
         val pStart: LocalDate
         val pEnd: LocalDate
 
         try {
-            // Period is always expected in full format
-            pStart = LocalDate.parse(periodStart, formatters[0])
-            pEnd = LocalDate.parse(periodEnd, formatters[0])
+            // Use DateParser to be robust with UI inputs too, though UI usually enforces dd.MM.yyyy
+            pStart =
+                    DateParser.parse(periodStart)
+                            ?: throw IllegalArgumentException("Invalid start date")
+            pEnd = DateParser.parse(periodEnd) ?: throw IllegalArgumentException("Invalid end date")
         } catch (e: Exception) {
-            return ValidationResult(
-                    false,
-                    errorMessage = "Ungültiges Datumsformat im Zeitraum (Erwartet: dd.MM.yyyy)."
-            )
+            return ValidationResult(false, errorMessage = "Ungültiges Datumsformat im Zeitraum.")
         }
 
         val invalidTransactions =
                 transactions.filter { tx ->
-                    var d: LocalDate? = null
-                    for (fmt in formatters) {
-                        try {
-                            d = LocalDate.parse(tx.date, fmt)
-                            break
-                        } catch (e: Exception) {
-                            // continue
-                        }
-                    }
-                    if (d != null) {
-                        d.isBefore(pStart) || d.isAfter(pEnd)
-                    } else {
-                        true // Invalid format
-                    }
+                    // tx.date is now LocalDate, so we just compare
+                    tx.date.isBefore(pStart) || tx.date.isAfter(pEnd)
                 }
 
         if (invalidTransactions.isNotEmpty()) {
-            val firstThree = invalidTransactions.take(3).joinToString(", ") { it.date }
+            val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+            val firstThree =
+                    invalidTransactions.take(3).joinToString(", ") { it.date.format(formatter) }
             return ValidationResult(
                     isValid = false,
                     invalidTransactions = invalidTransactions,

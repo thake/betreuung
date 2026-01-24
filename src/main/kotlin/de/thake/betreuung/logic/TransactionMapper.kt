@@ -9,6 +9,7 @@ object TransactionMapper {
         val dateStr = if (dateCol != null) row[dateCol] else null
 
         if (dateStr.isNullOrBlank()) return null
+        val date = DateParser.parse(dateStr) ?: return null
 
         val payee = row[mapping[XmlFields.PAYEE] ?: ""] ?: ""
         val purpose = row[mapping[XmlFields.PURPOSE] ?: ""] ?: ""
@@ -22,9 +23,9 @@ object TransactionMapper {
             val amount = CsvLogic.parseAmount(amountStr)
 
             return if (amount > 0) {
-                MappedTransaction(dateStr, payee, purpose, amount, TransactionType.INCOME)
+                MappedTransaction(date, payee, purpose, amount, TransactionType.INCOME)
             } else if (amount < 0) {
-                MappedTransaction(dateStr, payee, purpose, abs(amount), TransactionType.EXPENSE)
+                MappedTransaction(date, payee, purpose, abs(amount), TransactionType.EXPENSE)
             } else {
                 null
             }
@@ -36,9 +37,9 @@ object TransactionMapper {
         val incomeVal = if (incomeCol != null) CsvLogic.parseAmount(row[incomeCol] ?: "") else 0.0
 
         return if (expenseVal > 0) {
-            MappedTransaction(dateStr, payee, purpose, expenseVal, TransactionType.EXPENSE)
+            MappedTransaction(date, payee, purpose, expenseVal, TransactionType.EXPENSE)
         } else if (incomeVal > 0) {
-            MappedTransaction(dateStr, payee, purpose, incomeVal, TransactionType.INCOME)
+            MappedTransaction(date, payee, purpose, incomeVal, TransactionType.INCOME)
         } else {
             null
         }

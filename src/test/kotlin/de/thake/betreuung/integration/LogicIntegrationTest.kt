@@ -1,6 +1,7 @@
 package de.thake.betreuung.integration
 
 import de.thake.betreuung.logic.CsvLogic
+import de.thake.betreuung.logic.DateParser
 import de.thake.betreuung.logic.MappedTransaction
 import de.thake.betreuung.logic.TransactionType
 import de.thake.betreuung.logic.XmlGenerator
@@ -64,7 +65,7 @@ class LogicIntegrationTest {
                                 // Simple sign Logic for test
                                 if (amount > 0) {
                                         MappedTransaction(
-                                                date,
+                                                DateParser.parse(date) ?: java.time.LocalDate.now(),
                                                 payee,
                                                 purpose,
                                                 amount,
@@ -72,7 +73,7 @@ class LogicIntegrationTest {
                                         )
                                 } else {
                                         MappedTransaction(
-                                                date,
+                                                DateParser.parse(date) ?: java.time.LocalDate.now(),
                                                 payee,
                                                 purpose,
                                                 kotlin.math.abs(amount),
@@ -155,7 +156,7 @@ class LogicIntegrationTest {
                 // 2. Mock Transactions (merged from 2 CSVs conceptually)
                 val tx1 =
                         MappedTransaction(
-                                "01.01.2024",
+                                java.time.LocalDate.of(2024, 1, 1),
                                 "P1",
                                 "Purpose1",
                                 100.0,
@@ -163,7 +164,7 @@ class LogicIntegrationTest {
                         )
                 val tx2 =
                         MappedTransaction(
-                                "02.01.2024",
+                                java.time.LocalDate.of(2024, 1, 2),
                                 "P2",
                                 "Purpose2",
                                 50.0,
@@ -197,9 +198,10 @@ class LogicIntegrationTest {
                 )
 
                 // Verify Split Datasets
-                // Account 1 (tx1, 100 income) should be in linked_Abrechnungstabelle1
+                // Account 1 (tx1, 100 income) should be in linked_Abrechnungstabelle (no suffix for
+                // first)
                 assertTrue(
-                        xmlContent.contains("id=\"linked_Abrechnungstabelle1\""),
+                        xmlContent.contains("id=\"linked_Abrechnungstabelle\""),
                         "Should have dataset 1"
                 )
                 // Account 2 (tx2, 50 expense) should be in linked_Abrechnungstabelle2
