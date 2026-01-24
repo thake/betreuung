@@ -1,11 +1,11 @@
 package de.thake.betreuung.logic
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import org.slf4j.LoggerFactory
 
 object DateValidator {
-    private val logger = LoggerFactory.getLogger(DateValidator::class.java)
+    private val logger = KotlinLogging.logger {}
 
     data class ValidationResult(
             val isValid: Boolean,
@@ -28,6 +28,7 @@ object DateValidator {
                             ?: throw IllegalArgumentException("Invalid start date")
             pEnd = DateParser.parse(periodEnd) ?: throw IllegalArgumentException("Invalid end date")
         } catch (e: Exception) {
+            logger.error(e) { "Error validating dates: $periodStart - $periodEnd" }
             return ValidationResult(false, errorMessage = "Ungültiges Datumsformat im Zeitraum.")
         }
 

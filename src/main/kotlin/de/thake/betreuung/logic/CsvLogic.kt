@@ -1,5 +1,6 @@
 package de.thake.betreuung.logic
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
@@ -10,6 +11,7 @@ import org.apache.commons.csv.CSVParser
 import org.mozilla.universalchardet.UniversalDetector
 
 object CsvLogic {
+    private val logger = KotlinLogging.logger {}
 
     fun detectCharset(file: File): Charset {
         val buf = ByteArray(4096)
@@ -23,7 +25,7 @@ object CsvLogic {
             }
             detector.dataEnd()
         } catch (e: Exception) {
-            e.printStackTrace()
+            logger.error(e) { "Error detecting charset" }
         } finally {
             fis.close()
         }
@@ -35,6 +37,7 @@ object CsvLogic {
             try {
                 Charset.forName(encoding)
             } catch (e: Exception) {
+                logger.error(e) { "Error creating Charset for name: $encoding" }
                 StandardCharsets.ISO_8859_1
             }
         } else {
@@ -138,6 +141,7 @@ object CsvLogic {
                 val formatUS = NumberFormat.getInstance(Locale.US)
                 return formatUS.parse(cleanValue).toDouble()
             } catch (e2: Exception) {
+                logger.error(e2) { "Failed to parse amount: $value (cleaned: $cleanValue)" }
                 return 0.0 // Fallback
             }
         }

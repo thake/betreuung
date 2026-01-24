@@ -1,9 +1,11 @@
 package de.thake.betreuung.logic
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 object DateParser {
+    private val logger = KotlinLogging.logger {}
 
     private val germanMonthNames =
             mapOf(
@@ -57,7 +59,7 @@ object DateParser {
             try {
                 return LocalDate.parse(trimmed, fmt)
             } catch (e: Exception) {
-                // ignore
+                logger.trace(e) { "Failed to parse '$trimmed' with formatter $fmt" }
             }
         }
 
@@ -78,7 +80,7 @@ object DateParser {
                     }
                     return LocalDate.of(year, month, day)
                 } catch (e: Exception) {
-                    // ignore
+                    logger.debug(e) { "Failed to parse '$trimmed' with regex fallback" }
                 }
             }
         }

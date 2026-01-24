@@ -11,6 +11,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import de.thake.betreuung.logic.DataManager
+import io.github.oshai.kotlinlogging.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
 
 @Composable
 fun LoginScreen(appState: AppStateModel) {
@@ -46,6 +49,7 @@ fun LoginScreen(appState: AppStateModel) {
 
             appState.navigateTo(Screen.BETREUTEN_LIST)
         } catch (e: Exception) {
+            logger.error(e) { "Login failed" }
             error = "Falsches Passwort oder Fehler: ${e.message}"
         }
     }

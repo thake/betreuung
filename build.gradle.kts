@@ -39,7 +39,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
 
     // Logging
-    implementation("org.slf4j:slf4j-simple:2.0.9")
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.14")
+    implementation("org.apache.logging.log4j:log4j-core:2.25.3")
+    implementation("org.apache.logging.log4j:log4j-api:2.25.3")
+    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.25.3")
     implementation("com.github.albfernandez:juniversalchardet:2.4.0")
 
     // Testing

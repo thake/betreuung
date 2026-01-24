@@ -11,10 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.thake.betreuung.logic.*
 import de.thake.betreuung.model.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.awt.FileDialog
 import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.*
+
+private val logger = KotlinLogging.logger {}
 
 enum class WorkStep {
     CONFIG,
@@ -106,6 +109,7 @@ fun WorkScreen(appState: AppStateModel) {
                     }
                 }
             } catch (e: Exception) {
+                logger.error(e) { "Fehler beim Lesen der CSV: ${f.absolutePath}" }
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
                     errorMsg = "Fehler beim Lesen der CSV: ${e.message}"
                     source.isLoading = false
@@ -210,6 +214,7 @@ fun WorkScreen(appState: AppStateModel) {
                     try {
                         periodEnd.split(".").last()
                     } catch (e: Exception) {
+                        logger.warn(e) { "Using fallback year YYYY" }
                         "YYYY"
                     }
             val bName = selectedBetreuter?.nachname ?: "Nachname"
@@ -225,6 +230,9 @@ fun WorkScreen(appState: AppStateModel) {
                             try {
                                 CsvLogic.parseAmount(source.startBalance)
                             } catch (e: Exception) {
+                                logger.warn(e) {
+                                    "Could not parse start balance: ${source.startBalance}"
+                                }
                                 0.0
                             }
                         }
@@ -242,8 +250,8 @@ fun WorkScreen(appState: AppStateModel) {
                 showSuccessDialog = true
             }
         } catch (e: Exception) {
+            logger.error(e) { "Error during XML generation" }
             errorMsg = "Fehler: ${e.message}"
-            e.printStackTrace()
         }
     }
 

@@ -3,12 +3,14 @@ package de.thake.betreuung.logic
 import de.thake.betreuung.model.Betreuter
 import de.thake.betreuung.model.MappingProfile
 import de.thake.betreuung.util.SecurityUtils
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 object DataManager {
+    private val logger = KotlinLogging.logger {}
     private val json = Json {
         ignoreUnknownKeys = true
         prettyPrint = true
@@ -32,6 +34,7 @@ object DataManager {
             val decrypted = SecurityUtils.decrypt(encrypted, password)
             return json.decodeFromString(decrypted)
         } catch (e: Exception) {
+            logger.error(e) { "Failed to load Betreuten" }
             throw RuntimeException("Failed to load Betreuten. Wrong password or corrupted file.", e)
             // In a real app we might want specific error types
         }
@@ -49,7 +52,7 @@ object DataManager {
         return try {
             json.decodeFromString(mappingsFile.readText())
         } catch (e: Exception) {
-            e.printStackTrace()
+            logger.error(e) { "Failed to load mappings" }
             emptyList()
         }
     }
