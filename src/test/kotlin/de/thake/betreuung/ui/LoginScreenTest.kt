@@ -5,6 +5,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runComposeUiTest
+import de.thake.betreuung.logic.DataManager
 import java.io.File
 import org.junit.jupiter.api.Test
 
@@ -13,10 +14,14 @@ class LoginScreenTest {
 
     @Test
     fun testLoginScreenStructure() = runComposeUiTest {
+        val tempDir = java.nio.file.Files.createTempDirectory("login_test").toFile()
+        tempDir.deleteOnExit()
+        DataManager.rootDir = tempDir
+
         val appState = AppStateModel()
 
         // Ensure clean state for test if possible
-        val fileExists = File("betreuten.dat").exists()
+        val fileExists = File(tempDir, "betreuten.dat").exists()
         val expectedButtonText = if (fileExists) "Öffnen" else "Erstellen"
 
         setContent { LoginScreen(appState) }
@@ -27,9 +32,11 @@ class LoginScreenTest {
 
     @Test
     fun testLoginOnEnter() = runComposeUiTest {
+        val tempDir = java.nio.file.Files.createTempDirectory("login_enter_test").toFile()
+        tempDir.deleteOnExit()
+        DataManager.rootDir = tempDir
+
         val appState = AppStateModel()
-        val file = File("betreuten.dat")
-        if (file.exists()) file.delete()
 
         setContent { LoginScreen(appState) }
 
@@ -40,7 +47,5 @@ class LoginScreenTest {
         assert(appState.currentScreen.value == Screen.BETREUTEN_LIST) {
             "Expected screen to be BETREUTEN_LIST but was ${appState.currentScreen.value}"
         }
-
-        if (file.exists()) file.delete()
     }
 }

@@ -15,7 +15,25 @@ object DataManager {
         ignoreUnknownKeys = true
         prettyPrint = true
     }
-    var rootDir: File = File(".")
+    var rootDir: File = getStateDir().also { if (!it.exists()) it.mkdirs() }
+
+    private fun getStateDir(): File {
+        val os = System.getProperty("os.name").lowercase()
+        val userHome = System.getProperty("user.home")
+
+        return when {
+            os.contains("win") -> {
+                val appData = System.getenv("APPDATA") ?: userHome
+                File(appData, "BetreuungXMLTool")
+            }
+            os.contains("mac") -> {
+                File(userHome, "Library/Application Support/BetreuungXMLTool")
+            }
+            else -> {
+                File(userHome, ".config/BetreuungXMLTool")
+            }
+        }
+    }
     private val betreuterFile
         get() = File(rootDir, "betreuten.dat")
     private val mappingsFile
