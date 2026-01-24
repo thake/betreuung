@@ -12,7 +12,7 @@ kotlin {
 }
 
 group = "de.thake"
-version = "1.0-SNAPSHOT"
+version = System.getProperty("app.version") ?: "1.0.0"
 
 repositories {
     mavenCentral()
@@ -62,7 +62,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "BetreuungXMLTool"
-            packageVersion = "1.0.0"
+            packageVersion = version.toString()
         }
     }
 }
