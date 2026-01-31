@@ -65,6 +65,7 @@ object RuleEngine {
                 .replace("{vorname}", betreuter.vorname)
                 .replace("{aktenzeichen}", betreuter.aktenzeichen)
                 .replace("{wohnort}", betreuter.wohnort)
+                .replace("{kuerzel}", betreuter.kuerzel)
     }
 
     private fun getValue(tx: MappedTransaction, field: RuleField): String {

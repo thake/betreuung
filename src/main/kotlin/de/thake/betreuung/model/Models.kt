@@ -21,7 +21,8 @@ data class Betreuter(
         val geburtsdatum: String, // format: dd.MM.yyyy
         val aktenzeichen: String, // element id="geschNr"
         val accounts: List<BankAccount> = emptyList(),
-        val wohnort: String // element id="ort"
+        val wohnort: String, // element id="ort"
+        val kuerzel: String = ""
 )
 
 @Serializable
@@ -32,12 +33,12 @@ data class MappingProfile(
 )
 
 object XmlFields {
-    const val DATE = "DateS2"
-    const val PAYEE = "BezeichnungPos3"
-    const val PURPOSE = "BezeichnungPos4"
-    const val EXPENSE = "ausgaben"
-    const val INCOME = "einnahmen"
+        const val DATE = "DateS2"
+        const val PAYEE = "BezeichnungPos3"
+        const val PURPOSE = "BezeichnungPos4"
+        const val EXPENSE = "ausgaben"
+        const val INCOME = "einnahmen"
 
-    val requiredTransactionFields = listOf(DATE, PAYEE, PURPOSE)
-    val amountFields = listOf(EXPENSE, INCOME)
+        val requiredTransactionFields = listOf(DATE, PAYEE, PURPOSE)
+        val amountFields = listOf(EXPENSE, INCOME)
 }

@@ -42,7 +42,8 @@ fun BetreutenScreen(appState: AppStateModel) {
                                         vorname = "",
                                         geburtsdatum = "",
                                         aktenzeichen = "",
-                                        wohnort = ""
+                                        wohnort = "",
+                                        kuerzel = ""
                                 )
                         appState.betreutenList.add(newB)
                         selectedBetreuter = newB
@@ -141,6 +142,18 @@ fun BetreuterEditForm(betreuter: Betreuter, onUpdate: (Betreuter) -> Unit, onDel
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
                 )
             }
+            Spacer(Modifier.height(8.dp))
+        }
+
+        item {
+            OutlinedTextField(
+                    value = betreuter.kuerzel,
+                    onValueChange = { onUpdate(betreuter.copy(kuerzel = it)) },
+                    label = { Text("Kürzel") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+            )
             Spacer(Modifier.height(8.dp))
         }
 

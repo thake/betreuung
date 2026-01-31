@@ -7,194 +7,216 @@ import org.junit.jupiter.api.Test
 
 class RuleEngineTest {
 
-    private val sampleTx =
-            MappedTransaction(
-                    date = LocalDate.of(2024, 1, 1),
-                    payee = "Amazon Market",
-                    purpose = "Kauf 12345",
-                    amount = 50.0,
-                    type = TransactionType.EXPENSE
-            )
-
-    private val sampleBetreuter =
-            Betreuter(
-                    id = "1",
-                    nachname = "Mustermann",
-                    vorname = "Max",
-                    geburtsdatum = "01.01.1980",
-                    aktenzeichen = "AZ123",
-                    wohnort = "Berlin",
-                    accounts = emptyList()
-            )
-
-    @Test
-    fun `test STARTS_WITH condition matches`() {
-        val rule =
-                ReplacementRule(
-                        id = "r1",
-                        name = "Test Rule",
-                        condition =
-                                ReplacementCondition(
-                                        RuleField.PAYEE,
-                                        ReplacementConditionType.STARTS_WITH,
-                                        "Amazon"
-                                ),
-                        action = ReplacementAction(RuleField.PURPOSE, "Online Order"),
-                        isActive = true
+        private val sampleTx =
+                MappedTransaction(
+                        date = LocalDate.of(2024, 1, 1),
+                        payee = "Amazon Market",
+                        purpose = "Kauf 12345",
+                        amount = 50.0,
+                        type = TransactionType.EXPENSE
                 )
 
-        val result = RuleEngine.applyRules(listOf(sampleTx), listOf(rule), sampleBetreuter)
-        assertEquals("Online Order", result[0].purpose)
-    }
-
-    @Test
-    fun `test CONTAINS condition matches`() {
-        val rule =
-                ReplacementRule(
-                        id = "r1",
-                        name = "Test Rule",
-                        condition =
-                                ReplacementCondition(
-                                        RuleField.PAYEE,
-                                        ReplacementConditionType.CONTAINS,
-                                        "Market"
-                                ),
-                        action = ReplacementAction(RuleField.PURPOSE, "Market Purchase"),
-                        isActive = true
+        private val sampleBetreuter =
+                Betreuter(
+                        id = "1",
+                        nachname = "Mustermann",
+                        vorname = "Max",
+                        geburtsdatum = "01.01.1980",
+                        aktenzeichen = "AZ123",
+                        wohnort = "Berlin",
+                        accounts = emptyList()
                 )
 
-        val result = RuleEngine.applyRules(listOf(sampleTx), listOf(rule), sampleBetreuter)
-        assertEquals("Market Purchase", result[0].purpose)
-    }
+        @Test
+        fun `test STARTS_WITH condition matches`() {
+                val rule =
+                        ReplacementRule(
+                                id = "r1",
+                                name = "Test Rule",
+                                condition =
+                                        ReplacementCondition(
+                                                RuleField.PAYEE,
+                                                ReplacementConditionType.STARTS_WITH,
+                                                "Amazon"
+                                        ),
+                                action = ReplacementAction(RuleField.PURPOSE, "Online Order"),
+                                isActive = true
+                        )
 
-    @Test
-    fun `test EQUALS condition matches`() {
-        // "Amazon Market" equals "Amazon Market"
-        val rule =
-                ReplacementRule(
-                        id = "r1",
-                        name = "Test Rule",
-                        condition =
-                                ReplacementCondition(
-                                        RuleField.PAYEE,
-                                        ReplacementConditionType.EQUALS,
-                                        "Amazon Market"
-                                ),
-                        action = ReplacementAction(RuleField.PURPOSE, "Exact Match"),
-                        isActive = true
-                )
+                val result = RuleEngine.applyRules(listOf(sampleTx), listOf(rule), sampleBetreuter)
+                assertEquals("Online Order", result[0].purpose)
+        }
 
-        val result = RuleEngine.applyRules(listOf(sampleTx), listOf(rule), sampleBetreuter)
-        assertEquals("Exact Match", result[0].purpose)
-    }
+        @Test
+        fun `test CONTAINS condition matches`() {
+                val rule =
+                        ReplacementRule(
+                                id = "r1",
+                                name = "Test Rule",
+                                condition =
+                                        ReplacementCondition(
+                                                RuleField.PAYEE,
+                                                ReplacementConditionType.CONTAINS,
+                                                "Market"
+                                        ),
+                                action = ReplacementAction(RuleField.PURPOSE, "Market Purchase"),
+                                isActive = true
+                        )
 
-    @Test
-    fun `test condition does NOT match`() {
-        val rule =
-                ReplacementRule(
-                        id = "r1",
-                        name = "Test Rule",
-                        condition =
-                                ReplacementCondition(
-                                        RuleField.PAYEE,
-                                        ReplacementConditionType.STARTS_WITH,
-                                        "Google"
-                                ),
-                        action = ReplacementAction(RuleField.PURPOSE, "Should Not Happen"),
-                        isActive = true
-                )
+                val result = RuleEngine.applyRules(listOf(sampleTx), listOf(rule), sampleBetreuter)
+                assertEquals("Market Purchase", result[0].purpose)
+        }
 
-        val result = RuleEngine.applyRules(listOf(sampleTx), listOf(rule), sampleBetreuter)
-        assertEquals("Kauf 12345", result[0].purpose)
-    }
+        @Test
+        fun `test EQUALS condition matches`() {
+                // "Amazon Market" equals "Amazon Market"
+                val rule =
+                        ReplacementRule(
+                                id = "r1",
+                                name = "Test Rule",
+                                condition =
+                                        ReplacementCondition(
+                                                RuleField.PAYEE,
+                                                ReplacementConditionType.EQUALS,
+                                                "Amazon Market"
+                                        ),
+                                action = ReplacementAction(RuleField.PURPOSE, "Exact Match"),
+                                isActive = true
+                        )
 
-    @Test
-    fun `test template replacement`() {
-        val rule =
-                ReplacementRule(
-                        id = "r1",
-                        name = "Test Rule",
-                        condition =
-                                ReplacementCondition(
-                                        RuleField.PAYEE,
-                                        ReplacementConditionType.STARTS_WITH,
-                                        "Amazon"
-                                ),
-                        action =
-                                ReplacementAction(
-                                        RuleField.PURPOSE,
-                                        "Order for {nachname}, {vorname}"
-                                ),
-                        isActive = true
-                )
+                val result = RuleEngine.applyRules(listOf(sampleTx), listOf(rule), sampleBetreuter)
+                assertEquals("Exact Match", result[0].purpose)
+        }
 
-        val result = RuleEngine.applyRules(listOf(sampleTx), listOf(rule), sampleBetreuter)
-        assertEquals("Order for Mustermann, Max", result[0].purpose)
-    }
+        @Test
+        fun `test condition does NOT match`() {
+                val rule =
+                        ReplacementRule(
+                                id = "r1",
+                                name = "Test Rule",
+                                condition =
+                                        ReplacementCondition(
+                                                RuleField.PAYEE,
+                                                ReplacementConditionType.STARTS_WITH,
+                                                "Google"
+                                        ),
+                                action = ReplacementAction(RuleField.PURPOSE, "Should Not Happen"),
+                                isActive = true
+                        )
 
-    @Test
-    fun `test global rule applies when mappingId is null`() {
-        val rule =
-                ReplacementRule(
-                        id = "r1",
-                        name = "Global Rule",
-                        mappingId = null,
-                        condition =
-                                ReplacementCondition(
-                                        RuleField.PAYEE,
-                                        ReplacementConditionType.STARTS_WITH,
-                                        "Amazon"
-                                ),
-                        action = ReplacementAction(RuleField.PURPOSE, "Global"),
-                        isActive = true
-                )
+                val result = RuleEngine.applyRules(listOf(sampleTx), listOf(rule), sampleBetreuter)
+                assertEquals("Kauf 12345", result[0].purpose)
+        }
 
-        // different mapping ID active
-        val result =
-                RuleEngine.applyRules(
-                        listOf(sampleTx),
-                        listOf(rule),
-                        sampleBetreuter,
-                        activeMappingId = "someMappingId"
-                )
-        assertEquals("Global", result[0].purpose)
-    }
+        @Test
+        fun `test template replacement`() {
+                val rule =
+                        ReplacementRule(
+                                id = "r1",
+                                name = "Test Rule",
+                                condition =
+                                        ReplacementCondition(
+                                                RuleField.PAYEE,
+                                                ReplacementConditionType.STARTS_WITH,
+                                                "Amazon"
+                                        ),
+                                action =
+                                        ReplacementAction(
+                                                RuleField.PURPOSE,
+                                                "Order for {nachname}, {vorname}"
+                                        ),
+                                isActive = true
+                        )
 
-    @Test
-    fun `test specific rule applies only when mappingId matches`() {
-        val rule =
-                ReplacementRule(
-                        id = "r1",
-                        name = "Specific Rule",
-                        mappingId = "m1",
-                        condition =
-                                ReplacementCondition(
-                                        RuleField.PAYEE,
-                                        ReplacementConditionType.STARTS_WITH,
-                                        "Amazon"
-                                ),
-                        action = ReplacementAction(RuleField.PURPOSE, "Specific"),
-                        isActive = true
-                )
+                val result = RuleEngine.applyRules(listOf(sampleTx), listOf(rule), sampleBetreuter)
+                assertEquals("Order for Mustermann, Max", result[0].purpose)
+        }
 
-        // Match
-        val result1 =
-                RuleEngine.applyRules(
-                        listOf(sampleTx),
-                        listOf(rule),
-                        sampleBetreuter,
-                        activeMappingId = "m1"
-                )
-        assertEquals("Specific", result1[0].purpose)
+        @Test
+        fun `test kuerzel replacement`() {
+                val betreuterWithKuerzel = sampleBetreuter.copy(kuerzel = "MM")
+                val rule =
+                        ReplacementRule(
+                                id = "r_k1",
+                                name = "Kuerzel Rule",
+                                condition =
+                                        ReplacementCondition(
+                                                RuleField.PAYEE,
+                                                ReplacementConditionType.STARTS_WITH,
+                                                "Amazon"
+                                        ),
+                                action = ReplacementAction(RuleField.PURPOSE, "Ref: {kuerzel}"),
+                                isActive = true
+                        )
 
-        // No match
-        val result2 =
-                RuleEngine.applyRules(
-                        listOf(sampleTx),
-                        listOf(rule),
-                        sampleBetreuter,
-                        activeMappingId = "m2"
-                )
-        assertEquals("Kauf 12345", result2[0].purpose) // Unchanged
-    }
+                val result =
+                        RuleEngine.applyRules(listOf(sampleTx), listOf(rule), betreuterWithKuerzel)
+                assertEquals("Ref: MM", result[0].purpose)
+        }
+
+        @Test
+        fun `test global rule applies when mappingId is null`() {
+                val rule =
+                        ReplacementRule(
+                                id = "r1",
+                                name = "Global Rule",
+                                mappingId = null,
+                                condition =
+                                        ReplacementCondition(
+                                                RuleField.PAYEE,
+                                                ReplacementConditionType.STARTS_WITH,
+                                                "Amazon"
+                                        ),
+                                action = ReplacementAction(RuleField.PURPOSE, "Global"),
+                                isActive = true
+                        )
+
+                // different mapping ID active
+                val result =
+                        RuleEngine.applyRules(
+                                listOf(sampleTx),
+                                listOf(rule),
+                                sampleBetreuter,
+                                activeMappingId = "someMappingId"
+                        )
+                assertEquals("Global", result[0].purpose)
+        }
+
+        @Test
+        fun `test specific rule applies only when mappingId matches`() {
+                val rule =
+                        ReplacementRule(
+                                id = "r1",
+                                name = "Specific Rule",
+                                mappingId = "m1",
+                                condition =
+                                        ReplacementCondition(
+                                                RuleField.PAYEE,
+                                                ReplacementConditionType.STARTS_WITH,
+                                                "Amazon"
+                                        ),
+                                action = ReplacementAction(RuleField.PURPOSE, "Specific"),
+                                isActive = true
+                        )
+
+                // Match
+                val result1 =
+                        RuleEngine.applyRules(
+                                listOf(sampleTx),
+                                listOf(rule),
+                                sampleBetreuter,
+                                activeMappingId = "m1"
+                        )
+                assertEquals("Specific", result1[0].purpose)
+
+                // No match
+                val result2 =
+                        RuleEngine.applyRules(
+                                listOf(sampleTx),
+                                listOf(rule),
+                                sampleBetreuter,
+                                activeMappingId = "m2"
+                        )
+                assertEquals("Kauf 12345", result2[0].purpose) // Unchanged
+        }
 }
