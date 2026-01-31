@@ -4,7 +4,11 @@ import de.thake.betreuung.model.XmlFields
 import kotlin.math.abs
 
 object TransactionMapper {
-    fun mapRow(row: Map<String, String>, mapping: Map<String, String>): MappedTransaction? {
+    fun mapRow(
+            row: Map<String, String>,
+            mapping: Map<String, String>,
+            isCents: Boolean
+    ): MappedTransaction? {
         val dateCol = mapping[XmlFields.DATE]
         val dateStr = if (dateCol != null) row[dateCol] else null
 
@@ -20,7 +24,8 @@ object TransactionMapper {
         // Check if Single Column Signed Amount Mode
         if (expenseCol != null && incomeCol != null && expenseCol == incomeCol) {
             val amountStr = row[expenseCol] ?: ""
-            val amount = CsvLogic.parseAmount(amountStr)
+            var amount = CsvLogic.parseAmount(amountStr)
+            if (isCents) amount /= 100.0
 
             return if (amount > 0) {
                 MappedTransaction(date, payee, purpose, amount, TransactionType.INCOME)
@@ -32,9 +37,14 @@ object TransactionMapper {
         }
 
         // Separate Columns Mode
-        val expenseVal =
+        var expenseVal =
                 if (expenseCol != null) CsvLogic.parseAmount(row[expenseCol] ?: "") else 0.0
-        val incomeVal = if (incomeCol != null) CsvLogic.parseAmount(row[incomeCol] ?: "") else 0.0
+        var incomeVal = if (incomeCol != null) CsvLogic.parseAmount(row[incomeCol] ?: "") else 0.0
+
+        if (isCents) {
+            expenseVal /= 100.0
+            incomeVal /= 100.0
+        }
 
         return if (expenseVal > 0) {
             MappedTransaction(date, payee, purpose, expenseVal, TransactionType.EXPENSE)

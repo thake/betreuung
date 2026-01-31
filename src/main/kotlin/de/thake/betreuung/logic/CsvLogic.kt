@@ -146,4 +146,14 @@ object CsvLogic {
             }
         }
     }
+
+    fun detectCurrencyIsCents(values: List<String>): Boolean {
+        if (values.isEmpty()) return false
+        // specific check: if ALL values are integers (no , or .), assume cents.
+        // We only consider "meaningful" values (not empty).
+        val meaningfulValues = values.filter { it.isNotBlank() }
+        if (meaningfulValues.isEmpty()) return false
+
+        return meaningfulValues.all { value -> !value.contains(",") && !value.contains(".") }
+    }
 }

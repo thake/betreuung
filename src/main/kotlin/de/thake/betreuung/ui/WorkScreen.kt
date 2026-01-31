@@ -40,6 +40,7 @@ fun WorkScreen(appState: AppStateModel) {
         var rows by mutableStateOf<List<Map<String, String>>>(emptyList())
         var mapping = mutableStateMapOf<String, String>()
         var mappingProfileId by mutableStateOf<String?>(account.defaultMappingId)
+        var currencyMode by mutableStateOf(CurrencyMode.AUTO)
         var startBalance by mutableStateOf("0.00")
         var isLoading by mutableStateOf(false)
     }
@@ -138,6 +139,7 @@ fun WorkScreen(appState: AppStateModel) {
             source.mapping.clear()
             source.mapping.putAll(profile.columnMapping)
             source.mappingProfileId = profile.id
+            source.currencyMode = profile.currencyMode
             selectedMappingProfile = profile
 
             // Save choice preference
@@ -170,7 +172,8 @@ fun WorkScreen(appState: AppStateModel) {
                         MappingProfile(
                                 id = UUID.randomUUID().toString(),
                                 name = newMappingName,
-                                columnMapping = HashMap(source.mapping)
+                                columnMapping = HashMap(source.mapping),
+                                currencyMode = source.currencyMode
                         )
                 appState.mappingsList.add(newProfile)
                 DataManager.saveMappings(appState.mappingsList)
@@ -192,9 +195,27 @@ fun WorkScreen(appState: AppStateModel) {
             // Process rows for ALL sources, grouped by account
             val accountTransactions =
                     validSources.associate { source ->
+                        val isCents =
+                                when (source.currencyMode) {
+                                    CurrencyMode.CENT -> true
+                                    CurrencyMode.EURO -> false
+                                    CurrencyMode.AUTO -> {
+                                        val expenseCol = source.mapping[XmlFields.EXPENSE]
+                                        val incomeCol = source.mapping[XmlFields.INCOME]
+                                        val colsToCheck =
+                                                listOfNotNull(expenseCol, incomeCol).distinct()
+
+                                        val valuesToCheck =
+                                                source.rows.flatMap { row ->
+                                                    colsToCheck.mapNotNull { col -> row[col] }
+                                                }
+                                        CsvLogic.detectCurrencyIsCents(valuesToCheck)
+                                    }
+                                }
+
                         var txList =
                                 source.rows.mapNotNull { row ->
-                                    TransactionMapper.mapRow(row, source.mapping)
+                                    TransactionMapper.mapRow(row, source.mapping, isCents)
                                 }
 
                         // Apply Rules
@@ -340,6 +361,8 @@ fun WorkScreen(appState: AppStateModel) {
                                                                     source.mapping.putAll(
                                                                             profile.columnMapping
                                                                     )
+                                                                    source.currencyMode =
+                                                                            profile.currencyMode
                                                                 }
                                                     }
                                                     importSources.add(source)
@@ -590,6 +613,40 @@ fun WorkScreen(appState: AppStateModel) {
                             }
                             Spacer(Modifier.height(8.dp))
                         }
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Text("Währungsformat:", style = MaterialTheme.typography.subtitle2)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(
+                                selected =
+                                        activeSourceForMapping!!.currencyMode == CurrencyMode.AUTO,
+                                onClick = {
+                                    activeSourceForMapping!!.currencyMode = CurrencyMode.AUTO
+                                }
+                        )
+                        Text("Automatisch")
+                        Spacer(Modifier.width(16.dp))
+
+                        RadioButton(
+                                selected =
+                                        activeSourceForMapping!!.currencyMode == CurrencyMode.EURO,
+                                onClick = {
+                                    activeSourceForMapping!!.currencyMode = CurrencyMode.EURO
+                                }
+                        )
+                        Text("Euro")
+                        Spacer(Modifier.width(16.dp))
+
+                        RadioButton(
+                                selected =
+                                        activeSourceForMapping!!.currencyMode == CurrencyMode.CENT,
+                                onClick = {
+                                    activeSourceForMapping!!.currencyMode = CurrencyMode.CENT
+                                }
+                        )
+                        Text("Cent")
                     }
 
                     Spacer(Modifier.height(16.dp))

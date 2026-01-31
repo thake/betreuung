@@ -29,8 +29,15 @@ data class Betreuter(
 data class MappingProfile(
         val id: String,
         val name: String,
-        val columnMapping: Map<String, String> // XmlFieldId -> CsvHeaderName
+        val columnMapping: Map<String, String>, // XmlFieldId -> CsvHeaderName
+        val currencyMode: CurrencyMode = CurrencyMode.AUTO
 )
+
+enum class CurrencyMode {
+        AUTO,
+        EURO,
+        CENT
+}
 
 object XmlFields {
         const val DATE = "DateS2"
