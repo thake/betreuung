@@ -6,7 +6,8 @@ import kotlinx.serialization.Serializable
 enum class ReplacementConditionType(val label: String) {
     STARTS_WITH("Beginnt mit"),
     CONTAINS("Enthält"),
-    EQUALS("Ist gleich")
+    EQUALS("Ist gleich"),
+    REGEX("Regulärer Ausdruck")
 }
 
 @Serializable

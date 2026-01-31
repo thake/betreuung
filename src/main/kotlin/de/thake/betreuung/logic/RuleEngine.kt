@@ -33,39 +33,64 @@ object RuleEngine {
         var currentTx = transaction
 
         for (rule in rules) {
-            if (matches(currentTx, rule.condition)) {
-                currentTx = applyAction(currentTx, rule.action, betreuter)
+            val groups = matches(currentTx, rule.condition)
+            if (groups != null) {
+                currentTx = applyAction(currentTx, rule.action, betreuter, groups)
             }
         }
         return currentTx
     }
 
-    private fun matches(tx: MappedTransaction, condition: ReplacementCondition): Boolean {
+    private fun matches(tx: MappedTransaction, condition: ReplacementCondition): List<String>? {
         val value = getValue(tx, condition.field)
         val criteria = condition.value
 
         return when (condition.type) {
-            ReplacementConditionType.STARTS_WITH -> value.startsWith(criteria, ignoreCase = true)
-            ReplacementConditionType.CONTAINS -> value.contains(criteria, ignoreCase = true)
-            ReplacementConditionType.EQUALS -> value.equals(criteria, ignoreCase = true)
+            ReplacementConditionType.STARTS_WITH ->
+                    if (value.startsWith(criteria, ignoreCase = true)) emptyList() else null
+            ReplacementConditionType.CONTAINS ->
+                    if (value.contains(criteria, ignoreCase = true)) emptyList() else null
+            ReplacementConditionType.EQUALS ->
+                    if (value.equals(criteria, ignoreCase = true)) emptyList() else null
+            ReplacementConditionType.REGEX -> {
+                try {
+                    val regex = criteria.toRegex(RegexOption.IGNORE_CASE)
+                    regex.find(value)?.groupValues
+                } catch (e: Exception) {
+                    logger.error(e) { "Invalid regex: $criteria" }
+                    null
+                }
+            }
         }
     }
 
     private fun applyAction(
             tx: MappedTransaction,
             action: ReplacementAction,
-            betreuter: Betreuter
+            betreuter: Betreuter,
+            groups: List<String>
     ): MappedTransaction {
-        val newValue = replacePlaceholders(action.template, betreuter)
+        val newValue = replacePlaceholders(action.template, betreuter, groups)
         return setValue(tx, action.targetField, newValue)
     }
 
-    private fun replacePlaceholders(template: String, betreuter: Betreuter): String {
-        return template.replace("{nachname}", betreuter.nachname)
-                .replace("{vorname}", betreuter.vorname)
-                .replace("{aktenzeichen}", betreuter.aktenzeichen)
-                .replace("{wohnort}", betreuter.wohnort)
-                .replace("{kuerzel}", betreuter.kuerzel)
+    private fun replacePlaceholders(
+            template: String,
+            betreuter: Betreuter,
+            groups: List<String>
+    ): String {
+        var result =
+                template.replace("{nachname}", betreuter.nachname)
+                        .replace("{vorname}", betreuter.vorname)
+                        .replace("{aktenzeichen}", betreuter.aktenzeichen)
+                        .replace("{wohnort}", betreuter.wohnort)
+                        .replace("{kuerzel}", betreuter.kuerzel)
+
+        for (i in groups.indices) {
+            result = result.replace("\$$i", groups[i])
+        }
+
+        return result
     }
 
     private fun getValue(tx: MappedTransaction, field: RuleField): String {

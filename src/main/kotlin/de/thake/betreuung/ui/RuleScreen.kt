@@ -230,7 +230,7 @@ fun RuleEditDialog(
                             modifier = Modifier.fillMaxWidth()
                     )
                     Text(
-                            "Platzhalter: {kuerzel}{nachname}, {vorname}, {aktenzeichen}, {wohnort}",
+                            "Platzhalter: {kuerzel}, {nachname}, {vorname}, {aktenzeichen}, {wohnort}\nBei einem Regulären Ausdruck: $1, $2, ... für Gruppen",
                             style = MaterialTheme.typography.caption
                     )
                 }

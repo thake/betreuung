@@ -219,4 +219,28 @@ class RuleEngineTest {
                         )
                 assertEquals("Kauf 12345", result2[0].purpose) // Unchanged
         }
+
+        @Test
+        fun `test REGEX condition matches with groups`() {
+                val rule =
+                        ReplacementRule(
+                                id = "reg1",
+                                name = "Regex Rule",
+                                condition =
+                                        ReplacementCondition(
+                                                RuleField.PAYEE,
+                                                ReplacementConditionType.REGEX,
+                                                "(Amazon) (.*)"
+                                        ),
+                                action =
+                                        ReplacementAction(
+                                                RuleField.PURPOSE,
+                                                "Matched: $1, Rest: $2"
+                                        ),
+                                isActive = true
+                        )
+
+                val result = RuleEngine.applyRules(listOf(sampleTx), listOf(rule), sampleBetreuter)
+                assertEquals("Matched: Amazon, Rest: Market", result[0].purpose)
+        }
 }
