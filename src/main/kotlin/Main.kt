@@ -29,6 +29,7 @@ fun main() = application {
                                         de.thake.betreuung.ui.BetreutenScreen(appState)
                                 Screen.MAPPING_LIST -> de.thake.betreuung.ui.MappingScreen(appState)
                                 Screen.WORKFLOW -> de.thake.betreuung.ui.WorkScreen(appState)
+                                Screen.RULES -> de.thake.betreuung.ui.RuleScreen(appState)
                                 else -> Text("Error")
                             }
                         }

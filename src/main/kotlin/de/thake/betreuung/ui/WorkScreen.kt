@@ -39,6 +39,7 @@ fun WorkScreen(appState: AppStateModel) {
         var headers by mutableStateOf<List<String>>(emptyList())
         var rows by mutableStateOf<List<Map<String, String>>>(emptyList())
         var mapping = mutableStateMapOf<String, String>()
+        var mappingProfileId by mutableStateOf<String?>(account.defaultMappingId)
         var startBalance by mutableStateOf("0.00")
         var isLoading by mutableStateOf(false)
     }
@@ -136,6 +137,7 @@ fun WorkScreen(appState: AppStateModel) {
         activeSourceForMapping?.let { source ->
             source.mapping.clear()
             source.mapping.putAll(profile.columnMapping)
+            source.mappingProfileId = profile.id
             selectedMappingProfile = profile
 
             // Save choice preference
@@ -190,10 +192,23 @@ fun WorkScreen(appState: AppStateModel) {
             // Process rows for ALL sources, grouped by account
             val accountTransactions =
                     validSources.associate { source ->
-                        val txList =
+                        var txList =
                                 source.rows.mapNotNull { row ->
                                     TransactionMapper.mapRow(row, source.mapping)
                                 }
+
+                        // Apply Rules
+                        if (txList.isNotEmpty()) {
+                            val rules = DataManager.loadRules() // Load fresh rules
+                            txList =
+                                    RuleEngine.applyRules(
+                                            transactions = txList,
+                                            rules = rules,
+                                            betreuter = selectedBetreuter!!,
+                                            activeMappingId = source.mappingProfileId
+                                    )
+                        }
+
                         source.account to txList
                     }
 

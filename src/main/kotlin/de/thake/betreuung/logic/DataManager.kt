@@ -2,6 +2,7 @@ package de.thake.betreuung.logic
 
 import de.thake.betreuung.model.Betreuter
 import de.thake.betreuung.model.MappingProfile
+import de.thake.betreuung.model.ReplacementRule
 import de.thake.betreuung.util.SecurityUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
@@ -38,6 +39,8 @@ object DataManager {
         get() = File(rootDir, "betreuten.dat")
     private val mappingsFile
         get() = File(rootDir, "mappings.json")
+    private val rulesFile
+        get() = File(rootDir, "rules.json")
 
     fun saveBetreuten(betreute: List<Betreuter>, password: CharArray) {
         val jsonString = json.encodeToString(betreute)
@@ -71,6 +74,21 @@ object DataManager {
             json.decodeFromString(mappingsFile.readText())
         } catch (e: Exception) {
             logger.error(e) { "Failed to load mappings" }
+            emptyList()
+        }
+    }
+
+    fun saveRules(rules: List<ReplacementRule>) {
+        val jsonString = json.encodeToString(rules)
+        rulesFile.writeText(jsonString)
+    }
+
+    fun loadRules(): List<ReplacementRule> {
+        if (!rulesFile.exists()) return emptyList()
+        return try {
+            json.decodeFromString(rulesFile.readText())
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to load rules" }
             emptyList()
         }
     }

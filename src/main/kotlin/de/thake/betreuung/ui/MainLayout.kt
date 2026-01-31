@@ -28,6 +28,14 @@ fun MainLayout(appState: AppStateModel, content: @Composable () -> Unit) {
                                 Spacer(Modifier.width(4.dp))
                                 Text("Mappings", color = MaterialTheme.colors.onPrimary)
                             }
+                            TextButton(onClick = { appState.navigateTo(Screen.RULES) }) {
+                                Icon(
+                                        Icons.AutoMirrored.Filled.List,
+                                        contentDescription = null
+                                ) // Reusing List icon or maybe Build?
+                                Spacer(Modifier.width(4.dp))
+                                Text("Regeln", color = MaterialTheme.colors.onPrimary)
+                            }
                             TextButton(onClick = { appState.navigateTo(Screen.WORKFLOW) }) {
                                 Icon(Icons.Default.PlayArrow, contentDescription = null)
                                 Spacer(Modifier.width(4.dp))
