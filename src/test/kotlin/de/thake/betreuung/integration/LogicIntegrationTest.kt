@@ -248,4 +248,65 @@ class LogicIntegrationTest {
                 assertEquals("A", rows[0]["Empfaenger"])
                 assertEquals("B", rows[1]["Empfaenger"])
         }
+
+        @Test
+        fun testUnsortedInputGeneratesSortedOutput() {
+                // 1. Setup Data
+                val account = BankAccount("id1", "DE100", "Bank A")
+                val betreuter =
+                        Betreuter(
+                                "1",
+                                "Muster",
+                                "Max",
+                                "01.01.1980",
+                                "AZ1",
+                                listOf(account),
+                                "City"
+                        )
+
+                // 2. Mock Unsorted Transactions
+                val tx1 =
+                        MappedTransaction(
+                                java.time.LocalDate.of(2024, 1, 5),
+                                "P_Later",
+                                "Purpose1",
+                                100.0,
+                                TransactionType.INCOME
+                        )
+                val tx2 =
+                        MappedTransaction(
+                                java.time.LocalDate.of(2024, 1, 1),
+                                "P_Earlier",
+                                "Purpose2",
+                                50.0,
+                                TransactionType.EXPENSE
+                        )
+                // List is unsorted (Later date first)
+                val unsortedTxs = listOf(tx1, tx2)
+
+                // 3. Generate XML
+                val xmlFile = File(tempFolder, "sorted_result.xml")
+                XmlGenerator.generateXml(
+                        betreuter = betreuter,
+                        accountTransactions = mapOf(account to unsortedTxs),
+                        periodStart = "01.01.2024",
+                        periodEnd = "31.01.2024",
+                        initialBalance = 0.0,
+                        outputFile = xmlFile
+                )
+
+                // 4. Verify Order in XML
+                val xmlContent = xmlFile.readText()
+
+                // We expect "P_Earlier" (01.01) to appear before "P_Later" (05.01)
+                val idxEarlier = xmlContent.indexOf("P_Earlier")
+                val idxLater = xmlContent.indexOf("P_Later")
+
+                assertTrue(idxEarlier != -1, "Should contain P_Earlier")
+                assertTrue(idxLater != -1, "Should contain P_Later")
+                assertTrue(
+                        idxEarlier < idxLater,
+                        "Transactions should be sorted by date: Earlier tx at $idxEarlier, Later tx at $idxLater"
+                )
+        }
 }

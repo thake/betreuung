@@ -119,7 +119,7 @@ object XmlGenerator {
             if (i < accounts.size) {
                 // Fill with info from account i
                 val account = accounts[i]
-                val txList = accountTransactions[account] ?: emptyList()
+                val txList = (accountTransactions[account] ?: emptyList()).sortedBy { it.date }
 
                 txList.forEach { tx ->
                     val txRow = doc.createElement("datarow")
