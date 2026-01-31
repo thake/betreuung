@@ -19,7 +19,8 @@ private val logger = KotlinLogging.logger {}
 fun LoginScreen(appState: AppStateModel) {
     var passwordInput by remember { mutableStateOf("") }
     var error by remember { mutableStateOf("") }
-    val hasFile = remember { DataManager.hasBetreutenFile() }
+    var hasFile by remember { mutableStateOf(DataManager.hasBetreutenFile()) }
+    var showResetDialog by remember { mutableStateOf(false) }
 
     fun performLogin() {
         if (passwordInput.isBlank()) {
@@ -54,6 +55,32 @@ fun LoginScreen(appState: AppStateModel) {
         }
     }
 
+    if (showResetDialog) {
+        AlertDialog(
+                onDismissRequest = { showResetDialog = false },
+                title = { Text("Datenbank zurücksetzen?") },
+                text = {
+                    Text(
+                            "Dies löscht alle Betreuer-Daten unwiderruflich! Andere Einstellungen bleiben erhalten."
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                            onClick = {
+                                DataManager.deleteBetreuten()
+                                hasFile = false
+                                passwordInput = ""
+                                error = ""
+                                showResetDialog = false
+                            }
+                    ) { Text("Löschen", color = MaterialTheme.colors.error) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showResetDialog = false }) { Text("Abbrechen") }
+                }
+        )
+    }
+
     Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -78,6 +105,13 @@ fun LoginScreen(appState: AppStateModel) {
         if (error.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(error, color = MaterialTheme.colors.error)
+
+            if (hasFile) {
+                Spacer(modifier = Modifier.height(8.dp))
+                TextButton(onClick = { showResetDialog = true }) {
+                    Text("Datenbank zurücksetzen", color = MaterialTheme.colors.error)
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))

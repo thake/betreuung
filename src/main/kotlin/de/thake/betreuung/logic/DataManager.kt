@@ -63,6 +63,12 @@ object DataManager {
 
     fun hasBetreutenFile(): Boolean = betreuterFile.exists()
 
+    fun deleteBetreuten() {
+        if (betreuterFile.exists()) {
+            betreuterFile.delete()
+        }
+    }
+
     fun saveMappings(mappings: List<MappingProfile>) {
         val jsonString = json.encodeToString(mappings)
         mappingsFile.writeText(jsonString)
