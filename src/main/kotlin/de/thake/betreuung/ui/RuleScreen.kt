@@ -170,11 +170,7 @@ fun RuleEditDialog(
                     }
 
                     if (!isGlobal && mappings.isNotEmpty()) {
-                        // Mapping Dropdown (Simplified as Row with Radio or just simple dropdown
-                        // logic)
-                        // For simplicity, using a basic selection logic or text hint if limited
-                        // components
-                        Text("Wähle Mapping (Dropdown placeholder - using first or ID logic)")
+                        Text("Wähle Mapping")
                         // Simple distinct List selection
                         mappings.forEach { m ->
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -204,7 +200,7 @@ fun RuleEditDialog(
                             ReplacementConditionType.values(),
                             condType,
                             { condType = it },
-                            { it.name }
+                            { it.label }
                     )
                     // Value
                     OutlinedTextField(

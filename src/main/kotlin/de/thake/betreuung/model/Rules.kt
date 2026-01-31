@@ -3,10 +3,10 @@ package de.thake.betreuung.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class ReplacementConditionType {
-    STARTS_WITH,
-    CONTAINS,
-    EQUALS
+enum class ReplacementConditionType(val label: String) {
+    STARTS_WITH("Beginnt mit"),
+    CONTAINS("Enthält"),
+    EQUALS("Ist gleich")
 }
 
 @Serializable

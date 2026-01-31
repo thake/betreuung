@@ -56,7 +56,10 @@ object DataManager {
             return json.decodeFromString(decrypted)
         } catch (e: Exception) {
             logger.error(e) { "Failed to load Betreuten" }
-            throw RuntimeException("Failed to load Betreuten. Wrong password or corrupted file.", e)
+            throw RuntimeException(
+                    "Benutzerdaten konnten nicht geladen werden. Falsches Passwort oder beschädigte Datei.",
+                    e
+            )
             // In a real app we might want specific error types
         }
     }
