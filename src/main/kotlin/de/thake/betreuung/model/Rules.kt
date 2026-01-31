@@ -32,7 +32,7 @@ data class ReplacementCondition(
 data class ReplacementRule(
         val id: String,
         val name: String,
-        val mappingId: String? = null, // null = Global
+        val mappingIds: List<String> = emptyList(), // empty = Global
         val condition: ReplacementCondition,
         val action: ReplacementAction,
         val isActive: Boolean = true

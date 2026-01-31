@@ -15,7 +15,10 @@ object RuleEngine {
         // Filter rules that are either Global OR specific to this mapping
         val applicableRules =
                 rules.filter { rule ->
-                    rule.isActive && (rule.mappingId == null || rule.mappingId == activeMappingId)
+                    rule.isActive &&
+                            (rule.mappingIds.isEmpty() ||
+                                    (activeMappingId != null &&
+                                            rule.mappingIds.contains(activeMappingId)))
                 }
 
         if (applicableRules.isEmpty()) return transactions

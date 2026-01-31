@@ -71,11 +71,20 @@ fun RuleScreen(appState: AppStateModel) {
 
             LazyColumn {
                 items(appState.rulesList) { rule ->
+                    val mappingText =
+                            if (rule.mappingIds.isEmpty()) "Global"
+                            else {
+                                val names =
+                                        rule.mappingIds.mapNotNull { id ->
+                                            appState.mappingsList.find { it.id == id }?.name
+                                        }
+                                if (names.isEmpty()) "Unbekannte Mappings"
+                                else names.joinToString(", ")
+                            }
+
                     RuleItem(
                             rule = rule,
-                            mappingName =
-                                    appState.mappingsList.find { it.id == rule.mappingId }?.name
-                                            ?: "Global",
+                            mappingName = mappingText,
                             onEdit = {
                                 editingRule = rule
                                 showDialog = true
@@ -132,9 +141,10 @@ fun RuleEditDialog(
         onDismiss: () -> Unit
 ) {
     var name by remember { mutableStateOf(initialRule?.name ?: "") }
-    var isGlobal by remember { mutableStateOf(initialRule?.mappingId == null) }
-    var selectedMappingId by remember {
-        mutableStateOf(initialRule?.mappingId ?: mappings.firstOrNull()?.id)
+    var isGlobal by remember { mutableStateOf(initialRule?.mappingIds?.isEmpty() ?: true) }
+    // Using a set for easier toggling
+    var selectedMappingIds by remember {
+        mutableStateOf(initialRule?.mappingIds?.toSet() ?: emptySet())
     }
 
     // Condition
@@ -165,18 +175,30 @@ fun RuleEditDialog(
                     Spacer(Modifier.height(8.dp))
                     Text("Gültigkeit", style = MaterialTheme.typography.subtitle2)
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(checked = isGlobal, onCheckedChange = { isGlobal = it })
+                        Checkbox(
+                                checked = isGlobal,
+                                onCheckedChange = {
+                                    isGlobal = it
+                                    if (it) selectedMappingIds = emptySet()
+                                }
+                        )
                         Text("Global (für alle Mappings)")
                     }
 
                     if (!isGlobal && mappings.isNotEmpty()) {
-                        Text("Wähle Mapping")
-                        // Simple distinct List selection
+                        Text("Wähle Mappings (Mehrfachauswahl möglich)")
                         mappings.forEach { m ->
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                RadioButton(
-                                        selected = (selectedMappingId == m.id),
-                                        onClick = { selectedMappingId = m.id }
+                                Checkbox(
+                                        checked = selectedMappingIds.contains(m.id),
+                                        onCheckedChange = { checked ->
+                                            selectedMappingIds =
+                                                    if (checked) {
+                                                        selectedMappingIds + m.id
+                                                    } else {
+                                                        selectedMappingIds - m.id
+                                                    }
+                                        }
                                 )
                                 Text(m.name)
                             }
@@ -242,7 +264,9 @@ fun RuleEditDialog(
                                     ReplacementRule(
                                             id = initialRule?.id ?: UUID.randomUUID().toString(),
                                             name = name,
-                                            mappingId = if (isGlobal) null else selectedMappingId,
+                                            mappingIds =
+                                                    if (isGlobal) emptyList()
+                                                    else selectedMappingIds.toList(),
                                             condition =
                                                     ReplacementCondition(
                                                             condField,

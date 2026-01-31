@@ -155,12 +155,12 @@ class RuleEngineTest {
         }
 
         @Test
-        fun `test global rule applies when mappingId is null`() {
+        fun `test global rule applies when mappingIds is empty`() {
                 val rule =
                         ReplacementRule(
                                 id = "r1",
                                 name = "Global Rule",
-                                mappingId = null,
+                                mappingIds = emptyList(),
                                 condition =
                                         ReplacementCondition(
                                                 RuleField.PAYEE,
@@ -183,12 +183,12 @@ class RuleEngineTest {
         }
 
         @Test
-        fun `test specific rule applies only when mappingId matches`() {
+        fun `test specific rule applies only when activeMappingId is in mappingIds`() {
                 val rule =
                         ReplacementRule(
                                 id = "r1",
                                 name = "Specific Rule",
-                                mappingId = "m1",
+                                mappingIds = listOf("m1", "m3"),
                                 condition =
                                         ReplacementCondition(
                                                 RuleField.PAYEE,
@@ -199,7 +199,7 @@ class RuleEngineTest {
                                 isActive = true
                         )
 
-                // Match
+                // Match m1
                 val result1 =
                         RuleEngine.applyRules(
                                 listOf(sampleTx),
@@ -209,15 +209,25 @@ class RuleEngineTest {
                         )
                 assertEquals("Specific", result1[0].purpose)
 
-                // No match
+                // Match m3
                 val result2 =
+                        RuleEngine.applyRules(
+                                listOf(sampleTx),
+                                listOf(rule),
+                                sampleBetreuter,
+                                activeMappingId = "m3"
+                        )
+                assertEquals("Specific", result2[0].purpose)
+
+                // No match m2
+                val result3 =
                         RuleEngine.applyRules(
                                 listOf(sampleTx),
                                 listOf(rule),
                                 sampleBetreuter,
                                 activeMappingId = "m2"
                         )
-                assertEquals("Kauf 12345", result2[0].purpose) // Unchanged
+                assertEquals("Kauf 12345", result3[0].purpose) // Unchanged
         }
 
         @Test
