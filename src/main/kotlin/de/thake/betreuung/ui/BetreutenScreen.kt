@@ -158,13 +158,29 @@ fun BetreuterEditForm(betreuter: Betreuter, onUpdate: (Betreuter) -> Unit, onDel
         }
 
         item {
+            val dateValid =
+                    betreuter.geburtsdatum.isEmpty() ||
+                            de.thake.betreuung.util.ValidationUtils.isValidDate(
+                                    betreuter.geburtsdatum
+                            )
             OutlinedTextField(
                     value = betreuter.geburtsdatum,
                     onValueChange = { onUpdate(betreuter.copy(geburtsdatum = it)) },
-                    label = { Text("Geburtsdatum (dd.MM.yyyy)") },
+                    label = {
+                        Text(
+                                if (dateValid) "Geburtsdatum (dd.MM.yyyy)"
+                                else "Geburtsdatum (Ungültiges Format)"
+                        )
+                    },
+                    isError = !dateValid,
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    colors =
+                            TextFieldDefaults.outlinedTextFieldColors(
+                                    errorLabelColor = MaterialTheme.colors.error,
+                                    errorBorderColor = MaterialTheme.colors.error
+                            )
             )
             Spacer(Modifier.height(8.dp))
         }
@@ -213,6 +229,11 @@ fun BetreuterEditForm(betreuter: Betreuter, onUpdate: (Betreuter) -> Unit, onDel
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
                     )
+
+                    val ibanValid =
+                            acc.iban.isEmpty() ||
+                                    de.thake.betreuung.util.ValidationUtils.isValidIban(acc.iban)
+
                     OutlinedTextField(
                             value = acc.iban,
                             onValueChange = { newIban ->
@@ -222,9 +243,15 @@ fun BetreuterEditForm(betreuter: Betreuter, onUpdate: (Betreuter) -> Unit, onDel
                                         }
                                 onUpdate(betreuter.copy(accounts = newAccs))
                             },
-                            label = { Text("IBAN") },
+                            label = { Text(if (ibanValid) "IBAN" else "IBAN (Ungültig)") },
+                            isError = !ibanValid,
                             singleLine = true,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            colors =
+                                    TextFieldDefaults.outlinedTextFieldColors(
+                                            errorLabelColor = MaterialTheme.colors.error,
+                                            errorBorderColor = MaterialTheme.colors.error
+                                    )
                     )
                 }
                 IconButton(
