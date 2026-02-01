@@ -24,17 +24,23 @@ class BetreutenScreenTest {
 
                 setContent { BetreutenScreen(appState) }
 
-                // Check if "Neuer Betreuter" button exists
+                // Check if "Neuer Betreuter" FAB exists (by content description)
+                onNodeWithContentDescription("Neuer Betreuter").assertExists()
+
+                // Click Add (FAB)
+                onNodeWithContentDescription("Neuer Betreuter").performClick()
+
+                // Check if Dialog title exists
                 onNodeWithText("Neuer Betreuter").assertExists()
 
-                // Click Add
-                onNodeWithText("Neuer Betreuter").performClick()
+                // Fill in Name
+                onNodeWithText("Nachname").performTextInput("Neu")
 
-                // Check if "Neu" (default name) appears in the list
+                // Save
+                onNodeWithText("Speichern").performClick()
+
+                // Check if "Neu, " appears in the list
                 onNodeWithText("Neu, ").assertExists()
-
-                // Check if Detail form appears (e.g., "Nachname" field)
-                onNodeWithText("Nachname").assertExists()
 
                 // Check data state directly to verify the Add action worked on the model
                 assert(appState.betreutenList.size == 1)
@@ -61,8 +67,8 @@ class BetreutenScreenTest {
                 // Click on the list item
                 onNodeWithText("Müller, Hans").performClick()
 
-                // Details should show up
-                onNodeWithText("Details bearbeiten").assertExists()
+                // Dialog should show up with title
+                onNodeWithText("Betreuter bearbeiten").assertExists()
 
                 // Verify value in text field
                 onNodeWithText("Müller").assertExists()
@@ -88,12 +94,7 @@ class BetreutenScreenTest {
                 // Select the item
                 onNodeWithText("Müller, Hans").performClick()
 
-                // The edit form should be scrollable.
-                // We look for a container that has a scroll action and contains the "Details
-                // bearbeiten"
-                // text or similar.
-                // Currently, it's just a Column in a Box, so this should fail.
-                onNode(hasScrollAction().and(hasAnyDescendant(hasText("Details bearbeiten"))))
-                        .assertExists()
+                // The edit form should be scrollable (LazyColumn).
+                onNodeWithTag("edit_list").assertExists()
         }
 }

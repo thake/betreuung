@@ -58,6 +58,8 @@ fun WorkScreen(appState: AppStateModel) {
 
     val scaffoldState = rememberScaffoldState()
 
+    val scope = rememberCoroutineScope()
+
     // Logic
     fun detectPeriodFromSources() {
         // Try to find any date in the first few rows of any source
@@ -103,8 +105,6 @@ fun WorkScreen(appState: AppStateModel) {
     var errorMsg by remember { mutableStateOf<String?>(null) }
     var showSuccessDialog by remember { mutableStateOf(false) }
     var successPath by remember { mutableStateOf("") }
-
-    val scope = rememberCoroutineScope()
 
     // Helpers
     fun loadFile(source: ImportSourceState, f: File) {

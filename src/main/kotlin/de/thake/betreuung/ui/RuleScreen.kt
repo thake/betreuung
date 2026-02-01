@@ -1,5 +1,6 @@
 package de.thake.betreuung.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,7 +10,6 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -111,7 +111,10 @@ fun RuleScreen(appState: AppStateModel) {
 
 @Composable
 fun RuleItem(rule: ReplacementRule, mappingName: String, onEdit: () -> Unit, onDelete: () -> Unit) {
-    Card(elevation = 2.dp, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+    Card(
+            elevation = 2.dp,
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable { onEdit() }
+    ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(rule.name, style = MaterialTheme.typography.subtitle1)
@@ -125,7 +128,7 @@ fun RuleItem(rule: ReplacementRule, mappingName: String, onEdit: () -> Unit, onD
                 )
                 Text("Gültigkeit: $mappingName", style = MaterialTheme.typography.caption)
             }
-            IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, "Bearbeiten") }
+            // Removed redundant Edit Button as the whole card is clickable
             IconButton(onClick = onDelete) {
                 Icon(Icons.Default.Delete, "Löschen", tint = MaterialTheme.colors.error)
             }
